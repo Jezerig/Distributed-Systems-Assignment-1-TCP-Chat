@@ -34,6 +34,14 @@ def send_message_thread(username):
         message = sys.stdin.readline()
         if (message):
             if(message[0] == '/'):
+                if(message.rstrip('\n').split(' ')[0].strip()[0:5] == '/join'):
+                    if (len(message.split(' ')) == 2):
+                        message_data = json.dumps({'username' : username, 'msg' : message.rstrip('\n')})
+                        server.send(message_data.encode())
+                    else:
+                        print("Usage: '/join [Channel name]'")
+                    continue
+
                 if(message.rstrip('\n').split(' ')[0].strip()[0:6] == '/exit'):
                     if (len(message.split(' ')) == 1):
                         message_data = json.dumps({'username' : username, 'msg' : message.rstrip('\n')})
@@ -42,6 +50,10 @@ def send_message_thread(username):
                         exit(0)
                     else:
                         print("Command '/exit' doesn't take any arguments.")
+                    continue
+                else:
+                    print("Invalid command.")
+        
             else:
                 message_data = json.dumps({'username' : username, 'msg' : message.rstrip('\n')})
                 server.send(message_data.encode())
