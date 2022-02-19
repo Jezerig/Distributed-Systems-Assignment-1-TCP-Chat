@@ -2,13 +2,12 @@
 # Distributed Systems Assignment 1
 # Jesse Pasanen 0545937
 
-from inspect import _void
+
 import socket
-import select
 import sys
-import errno
 import threading
 import time
+import json
 
 if(len(sys.argv) != 3):
     print("To establish a connection to a server give two arguments.")
@@ -24,16 +23,17 @@ server.connect((IP_ADDRESS, PORT))
 
 def receive_message_thread():
     while(True):
-        message = server.recv(BUFFER).decode('utf-8')
-        print(message)
+        message_data = server.recv(BUFFER)
+        message_data_decoded = json.loads(message_data.decode())
+        print("[{0}]: {1}".format(message_data_decoded['username'], message_data_decoded['msg']))
     
-
 def send_message_thread():
     time.sleep(0.5)
     while(True):
         message = sys.stdin.readline()
         if (message):
-            server.send(message.rstrip('\n').encode('utf-8'))
+            message_data = json.dumps({'username' : USERNAME, 'ip_address' : IP_ADDRESS, 'port' : PORT, 'msg' : message.rstrip('\n')})
+            server.send(message_data.encode())
             sys.stdout.write("[{0}]: {1}".format(USERNAME, message))
             sys.stdout.flush()
 
