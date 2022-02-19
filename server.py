@@ -13,17 +13,34 @@ SERVER_NAME = "Server"
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server.bind((IP_ADDRESS, PORT))
-server.listen(20)
-print("Server started...")
+server.listen(50)
+print("Server started...\nRunning...")
 clients = []
+usernames = [SERVER_NAME]
 
 def client_thread(client_socket, client_address):
-    welcome_message = "Welcome to the server!"
-    welcome_message_data = json.dumps({'username' : SERVER_NAME, 'ip_address' : IP_ADDRESS, 'port' : PORT, 'msg' : welcome_message})
+    welcome_message_data = json.dumps({'username' : SERVER_NAME, 'msg' : "Welcome to the server! Please select a username."})
     client_socket.send(welcome_message_data.encode())
+
+    while(True):
+        client_username = client_socket.recv(BUFFER).decode('utf-8')
+        print(client_username)
+        if client_username not in usernames:
+            client_socket.send("0".encode('utf-8'))
+            usernames.append(client_username)
+            break
+        else:
+            print("Username exists")
+            client_socket.send("1".encode('utf-8'))
+
     while(True):
         try:
             message_data = client_socket.recv(BUFFER)
+            # jos eka merkki on / niin siitä tulee komento
+            # /disconnect
+            # /join channelname
+            # /msg username viesti
+            # /exit
             if message_data:
                 message_data_decoded = json.loads(message_data.decode())
                 print("[{0}]: {1}".format(message_data_decoded['username'], message_data_decoded['msg']))
@@ -34,9 +51,11 @@ def client_thread(client_socket, client_address):
                         except:
                             if(client_socket in clients):
                                 clients.remove(client_socket)
+                                usernames.remove(client_username)
             else:
                 if(client_socket in clients):
                     clients.remove(client_socket)
+                    usernames.remove(client_username)
         except:
             continue
 

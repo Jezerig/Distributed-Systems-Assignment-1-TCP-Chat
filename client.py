@@ -16,30 +16,48 @@ if(len(sys.argv) != 3):
 IP_ADDRESS = str(sys.argv[1])
 PORT = int(sys.argv[2])
 BUFFER = 2048
-USERNAME = input("Username: ")
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.connect((IP_ADDRESS, PORT))
 
 
 def receive_message_thread():
+
     while(True):
         message_data = server.recv(BUFFER)
         message_data_decoded = json.loads(message_data.decode())
         print("[{0}]: {1}".format(message_data_decoded['username'], message_data_decoded['msg']))
     
-def send_message_thread():
+def send_message_thread(username):
     time.sleep(0.5)
     while(True):
         message = sys.stdin.readline()
         if (message):
-            message_data = json.dumps({'username' : USERNAME, 'ip_address' : IP_ADDRESS, 'port' : PORT, 'msg' : message.rstrip('\n')})
+            message_data = json.dumps({'username' : username, 'msg' : message.rstrip('\n')})
             server.send(message_data.encode())
-            sys.stdout.write("[{0}]: {1}".format(USERNAME, message))
+            sys.stdout.write("[{0}]: {1}".format(username, message))
             sys.stdout.flush()
 
+def select_username():
+    message_data = server.recv(BUFFER)
+    message_data_decoded = json.loads(message_data.decode())
+    print("[{0}]: {1}".format(message_data_decoded['username'], message_data_decoded['msg']))
+    while(True):
+        username = input("Username: ")
+        server.send(username.encode('utf-8'))
+        username_exists = server.recv(BUFFER).decode('utf-8')
+        print(int(username_exists))
+        if not (int(username_exists)):
+            print("username doesn't exist")
+            return username
+        else:
+            print("username exist")
+
+
 def main():
+    username = select_username()
     threading.Thread(target = receive_message_thread).start()
-    threading.Thread(target = send_message_thread).start()
+    threading.Thread(target = send_message_thread, args = (username,)).start()
 
 if __name__ == "__main__":
     main()
