@@ -84,6 +84,7 @@ def client_thread(client_socket, client_address):
                                     temp_channel_clients = channel['clients']
                                     temp_channel_clients.remove(client_socket)
                                     channel['clients'] = temp_channel_clients
+                        break
                     continue
                         
                     #if((message_data_decoded['msg'].strip(' ')[0:4] == '/msg') and (len(message_data_decoded['msg'].strip(' ')) > 2)):       
