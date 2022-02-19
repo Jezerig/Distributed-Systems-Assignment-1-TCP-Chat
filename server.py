@@ -48,20 +48,31 @@ def client_thread(client_socket, client_address):
             if message_data:
                 message_data_decoded = json.loads(message_data.decode())
                 if(message_data_decoded['msg'][0] == '/'):
-                    
                     if((message_data_decoded['msg'].rstrip('\n').split(' ')[0].strip()[0:5] == '/join') and (len(message_data_decoded['msg'].split(' ')) == 2)):
-                        if(len(client_channel) != 0):
+                        channel_found = False
+                        if(client_channel != message_data_decoded['msg'].split(' ')[1]):
                             for channel in channels:
-                                if(channel['name'] == client_channel):
+                                if(channel['name'] == message_data_decoded['msg'].split(' ')[1]):
+                                    channel_found = True
+                                    if(len(client_channel) != 0):
+                                        for channel in channels:
+                                            if(channel['name'] == client_channel):
+                                                temp_channel_clients = channel['clients']
+                                                temp_channel_clients.remove(client_socket)
+                                                channel['clients'] = temp_channel_clients
+                                                client_socket.send(json.dumps({'username' : SERVER_NAME, 'msg' : "Disconnected from channel {0}!".format(client_channel)}).encode())
+                                                print("User {0} ({1}:{2}) disconnected from channel {3}!".format(client_username, client_address[0], client_address[1], client_channel))
+                                    client_channel = message_data_decoded['msg'].split(' ')[1]
                                     temp_channel_clients = channel['clients']
-                                    temp_channel_clients.remove(client_socket)
+                                    temp_channel_clients.append(client_socket)
                                     channel['clients'] = temp_channel_clients
-                        for channel in channels:
-                            if(channel['name'] == message_data_decoded['msg'].split(' ')[1]):
-                                client_channel = message_data_decoded['msg'].split(' ')[1]
-                                temp_channel_clients = channel['clients']
-                                temp_channel_clients.append(client_socket)
-                                channel['clients'] = temp_channel_clients
+                                    client_socket.send(json.dumps({'username' : SERVER_NAME, 'msg' : "Connected to channel {0}!".format(client_channel)}).encode())
+                                    print("User {0} ({1}:{2}) connected to channel {3}!".format(client_username, client_address[0], client_address[1], client_channel))
+                            if not (channel_found):
+                                client_socket.send(json.dumps({'username' : SERVER_NAME, 'msg' : "Channel not found."}).encode())
+                        else:
+                            client_socket.send(json.dumps({'username' : SERVER_NAME, 'msg' : "You're already connected to channel {0}.".format(client_channel)}).encode())
+
 
                     elif((message_data_decoded['msg'].rstrip('\n').split(' ')[0].strip()[0:6] == '/exit') and (len(message_data_decoded['msg'].split(' ')) == 1)):
                         print("User {0} ({1}:{2}) disconnected.".format(client_username, client_address[0], client_address[1]))
