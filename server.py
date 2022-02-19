@@ -24,14 +24,16 @@ def client_thread(client_socket, client_address):
 
     while(True):
         client_username = client_socket.recv(BUFFER).decode('utf-8')
-        print(client_username)
         if client_username not in usernames:
             client_socket.send("0".encode('utf-8'))
+            username_response = json.dumps({'username' : SERVER_NAME, 'msg' : "Username set as " + client_username})
+            client_socket.send(username_response.encode())
             usernames.append(client_username)
             break
         else:
-            print("Username exists")
             client_socket.send("1".encode('utf-8'))
+            username_response = json.dumps({'username' : SERVER_NAME, 'msg' : "Username already exists. Please try another one..."})
+            client_socket.send(username_response.encode())
 
     while(True):
         try:

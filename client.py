@@ -46,12 +46,15 @@ def select_username():
         username = input("Username: ")
         server.send(username.encode('utf-8'))
         username_exists = server.recv(BUFFER).decode('utf-8')
-        print(int(username_exists))
+        username_msg_data = server.recv(BUFFER)
+        username_msg_data_decoded = json.loads(username_msg_data.decode())
         if not (int(username_exists)):
-            print("username doesn't exist")
+            sys.stdout.write("[{0}]: {1}\n".format(username_msg_data_decoded['username'], username_msg_data_decoded['msg']))
+            sys.stdout.flush()
             return username
         else:
-            print("username exist")
+            sys.stdout.write("[{0}]: {1}\n".format(username_msg_data_decoded['username'], username_msg_data_decoded['msg']))
+            sys.stdout.flush()
 
 
 def main():
