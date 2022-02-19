@@ -50,6 +50,12 @@ def client_thread(client_socket, client_address):
                 if(message_data_decoded['msg'][0] == '/'):
                     
                     if((message_data_decoded['msg'].rstrip('\n').split(' ')[0].strip()[0:5] == '/join') and (len(message_data_decoded['msg'].split(' ')) == 2)):
+                        if(len(client_channel) != 0):
+                            for channel in channels:
+                                if(channel['name'] == client_channel):
+                                    temp_channel_clients = channel['clients']
+                                    temp_channel_clients.remove(client_socket)
+                                    channel['clients'] = temp_channel_clients
                         for channel in channels:
                             if(channel['name'] == message_data_decoded['msg'].split(' ')[1]):
                                 client_channel = message_data_decoded['msg'].split(' ')[1]
@@ -67,19 +73,27 @@ def client_thread(client_socket, client_address):
                                     temp_channel_clients = channel['clients']
                                     temp_channel_clients.remove(client_socket)
                                     channel['clients'] = temp_channel_clients
-
+                    continue
                         
                     #if((message_data_decoded['msg'].strip(' ')[0:4] == '/msg') and (len(message_data_decoded['msg'].strip(' ')) > 2)):       
-                else:    
+                if(len(client_channel) != 0):    
                     print("[{0}]: {1}".format(message_data_decoded['username'], message_data_decoded['msg']))
-                    for client in clients:
-                        if(client != client_socket):
-                            try:
-                                client.send(message_data)
-                            except:
-                                if(client_socket in clients):
-                                    clients.remove(client_socket)
-                                    usernames.remove(client_username)
+                    for channel in channels:
+                        if(channel['name'] == client_channel):
+                            temp_channel_clients = channel['clients']
+                            for client in temp_channel_clients:
+                                if(client != client_socket):
+                                    try:
+                                        client.send(message_data)
+                                    except:
+                                        if(client_socket in clients):
+                                            clients.remove(client_socket)
+                                            usernames.remove(client_username)
+                                            temp_channel_clients.remove(client_socket)
+                                            channel['clients'] = temp_channel_clients
+                            
+                else:
+                    client_socket.send(json.dumps({'username' : SERVER_NAME, 'msg' : "Couldn't send message."}).encode())
             else:
                 if(client_socket in clients):
                     clients.remove(client_socket)
