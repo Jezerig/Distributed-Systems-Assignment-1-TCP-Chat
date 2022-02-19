@@ -33,10 +33,20 @@ def send_message_thread(username):
     while(True):
         message = sys.stdin.readline()
         if (message):
-            message_data = json.dumps({'username' : username, 'msg' : message.rstrip('\n')})
-            server.send(message_data.encode())
-            sys.stdout.write("[{0}]: {1}".format(username, message))
-            sys.stdout.flush()
+            if(message[0] == '/'):
+                if(message.rstrip('\n').split(' ')[0].strip()[0:6] == '/exit'):
+                    if (len(message.split(' ')) == 1):
+                        message_data = json.dumps({'username' : username, 'msg' : message.rstrip('\n')})
+                        server.send(message_data.encode())
+                        print("Disconnected.")
+                        exit(0)
+                    else:
+                        print("Command '/exit' doesn't take any arguments.")
+            else:
+                message_data = json.dumps({'username' : username, 'msg' : message.rstrip('\n')})
+                server.send(message_data.encode())
+                sys.stdout.write("[{0}]: {1}".format(username, message))
+                sys.stdout.flush()
 
 def select_username():
     message_data = server.recv(BUFFER)
@@ -61,6 +71,7 @@ def main():
     username = select_username()
     threading.Thread(target = receive_message_thread).start()
     threading.Thread(target = send_message_thread, args = (username,)).start()
+
 
 if __name__ == "__main__":
     main()

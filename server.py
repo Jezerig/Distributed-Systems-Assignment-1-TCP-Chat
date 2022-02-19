@@ -16,7 +16,8 @@ server.bind((IP_ADDRESS, PORT))
 server.listen(50)
 print("Server started...\nRunning...")
 clients = []
-usernames = [SERVER_NAME]
+usernames = []
+channels = ["channel1", "channel2", "channel3"]
 
 def client_thread(client_socket, client_address):
     welcome_message_data = json.dumps({'username' : SERVER_NAME, 'msg' : "Welcome to the server! Please select a username."})
@@ -38,22 +39,38 @@ def client_thread(client_socket, client_address):
     while(True):
         try:
             message_data = client_socket.recv(BUFFER)
+           
             # jos eka merkki on / niin siitä tulee komento
-            # /disconnect
             # /join channelname
             # /msg username viesti
             # /exit
             if message_data:
                 message_data_decoded = json.loads(message_data.decode())
-                print("[{0}]: {1}".format(message_data_decoded['username'], message_data_decoded['msg']))
-                for client in clients:
-                    if(client != client_socket):
-                        try:
-                            client.send(message_data)
-                        except:
-                            if(client_socket in clients):
-                                clients.remove(client_socket)
-                                usernames.remove(client_username)
+                if(message_data_decoded['msg'][0] == '/'):
+                    #if((message_data_decoded['msg'].strip(' ')[0:5] == '/join' and (len(message_data_decoded['msg'].strip(' ')) == 2)):
+                    
+                    if((message_data_decoded['msg'].rstrip('\n').split(' ')[0].strip()[0:6] == '/exit') and (len(message_data_decoded['msg'].split(' ')) == 1)):
+                        print("User {0} ({1}:{2}) disconnected.".format(client_username, client_address[0], client_address[1]))
+                        clients.remove(client_socket)
+                        usernames.remove(client_username)
+                        
+                    #if((message_data_decoded['msg'].strip(' ')[0:4] == '/msg') and (len(message_data_decoded['msg'].strip(' ')) > 2)):
+
+                    
+                    
+
+                    
+                    
+                else:    
+                    print("[{0}]: {1}".format(message_data_decoded['username'], message_data_decoded['msg']))
+                    for client in clients:
+                        if(client != client_socket):
+                            try:
+                                client.send(message_data)
+                            except:
+                                if(client_socket in clients):
+                                    clients.remove(client_socket)
+                                    usernames.remove(client_username)
             else:
                 if(client_socket in clients):
                     clients.remove(client_socket)
