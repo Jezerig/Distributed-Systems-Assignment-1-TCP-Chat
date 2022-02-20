@@ -18,6 +18,9 @@ print("Server started...\nRunning...")
 # nested list [[client_socket, username]]
 clients =  []
 channels = [{'name': "channel1", 'clients' : []}, { 'name': "channel2", 'clients' : []}]
+available_channels = ""
+for channel in channels:
+    available_channels += "\n'" + channel['name'] + "'"
 
 
 
@@ -51,7 +54,7 @@ def client_thread(client_socket, client_address):
             if(username_exists):
                 continue
             client_socket.send("0".encode('utf-8'))
-            client_socket.send(json.dumps({'username' : SERVER_NAME, 'msg' : "Username set as '" + client_username + "'"}).encode())
+            client_socket.send(json.dumps({'username' : SERVER_NAME, 'msg' : "Username set as '" + client_username + "'\n\nAvailable commands:\n'/join [Channel name]'\n'/msg [username] [message]'\n'/exit'\n\nAvailable chat channels: " + available_channels + "\n"}).encode())
             for client in clients:
                 if(client[0] == client_socket):
                     client[1] = client_username
@@ -87,21 +90,25 @@ def client_thread(client_socket, client_address):
                     if((message_data_decoded['msg'].rstrip('\n').split(' ')[0].strip()[0:5] == '/join') and (len(message_data_decoded['msg'].split(' ')) == 2)):
                         channel_found = False
                         if(client_channel != message_data_decoded['msg'].split(' ')[1]):
-                            for channel in channels:
-                                if(channel['name'] == message_data_decoded['msg'].split(' ')[1]):
+                            for new_channel in channels:
+                                if(new_channel['name'] == message_data_decoded['msg'].split(' ')[1]):
                                     channel_found = True
-                                    if(len(client_channel) != 0):
-                                        for channel in channels:
-                                            if(channel['name'] == client_channel):
-                                                temp_channel_clients = channel['clients']
+                                    if(len(client_channel) != 0):                                        
+                                        for old_channel in channels:
+                                            if(old_channel['name'] == client_channel):
+                                                temp_channel_clients = old_channel['clients']
+                                                print("Old channel clients before: ", temp_channel_clients)
                                                 temp_channel_clients.remove(client_socket)
-                                                channel['clients'] = temp_channel_clients
+                                                old_channel['clients'] = temp_channel_clients
                                                 client_socket.send(json.dumps({'username' : SERVER_NAME, 'msg' : "Disconnected from channel '{0}'".format(client_channel)}).encode())
                                                 print("User '{0}' ({1}:{2}) disconnected from channel '{3}'".format(client_username, client_address[0], client_address[1], client_channel))
+                                                print("Old channel clients after: ", temp_channel_clients)           
                                     client_channel = message_data_decoded['msg'].split(' ')[1]
-                                    temp_channel_clients = channel['clients']
-                                    temp_channel_clients.append(client_socket)
-                                    channel['clients'] = temp_channel_clients
+                                    temp_new_channel_clients = new_channel['clients']
+                                    print("New channel clients before: ", temp_new_channel_clients)
+                                    temp_new_channel_clients.append(client_socket)
+                                    print("New channel clients after: ", temp_new_channel_clients)
+                                    new_channel['clients'] = temp_new_channel_clients
                                     client_socket.send(json.dumps({'username' : SERVER_NAME, 'msg' : "Connected to channel '{0}'".format(client_channel)}).encode())
                                     print("User '{0}' ({1}:{2}) connected to channel '{3}'".format(client_username, client_address[0], client_address[1], client_channel))
                             if not (channel_found):

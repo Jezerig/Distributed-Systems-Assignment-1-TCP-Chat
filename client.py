@@ -12,13 +12,23 @@ import json
 if(len(sys.argv) != 3):
     print("To establish a connection to a server give two arguments.")
     print("client.py [IP ADDRESS] [PORT]")
-    exit(1)
+    sys.exit(1)
 IP_ADDRESS = str(sys.argv[1])
-PORT = int(sys.argv[2])
+try:
+    PORT = int(sys.argv[2])
+except:
+    print("Invalid port")
+    print("client.py [IP ADDRESS] [PORT]")
+    sys.exit(1)
+
 BUFFER = 2048
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.connect((IP_ADDRESS, PORT))
+try:
+    server.connect((IP_ADDRESS, PORT))
+except:
+    print("Unable to connect to server {0}:{1}".format(IP_ADDRESS, PORT))
+    sys.exit(1)
 
 
 def receive_message_thread():
@@ -62,7 +72,7 @@ def send_message_thread(username):
                         print("Usage: '/msg [username] [message]'")
                     continue
                 else:
-                    print("Invalid command.")
+                    print("Invalid command. Available commands:\n'/join [Channel name]'\n'/msg [username] [message]'\n'/exit'\n")
         
             else:
                 message_data = json.dumps({'username' : username, 'msg' : message.rstrip('\n')})
