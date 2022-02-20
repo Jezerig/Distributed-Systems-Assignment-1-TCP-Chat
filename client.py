@@ -24,9 +24,13 @@ server.connect((IP_ADDRESS, PORT))
 def receive_message_thread():
 
     while(True):
-        message_data = server.recv(BUFFER)
-        message_data_decoded = json.loads(message_data.decode())
-        print("[{0}]: {1}".format(message_data_decoded['username'], message_data_decoded['msg']))
+        try:
+            message_data = server.recv(BUFFER)
+            message_data_decoded = json.loads(message_data.decode())
+            print("[{0}]: {1}".format(message_data_decoded['username'], message_data_decoded['msg']))
+        except:
+            print("Failed to receive messages.")
+            sys.exit(0)
     
 def send_message_thread(username):
     time.sleep(0.5)
@@ -47,9 +51,16 @@ def send_message_thread(username):
                         message_data = json.dumps({'username' : username, 'msg' : message.rstrip('\n')})
                         server.send(message_data.encode())
                         print("Disconnected.")
-                        exit(0)
+                        sys.exit(0)
                     else:
                         print("Command '/exit' doesn't take any arguments.")
+                    continue
+                if(message.rstrip('\n').split(' ')[0].strip()[0:4] == '/msg'):
+                    if (len(message.split(' ')) > 2):
+                        message_data = json.dumps({'username' : username, 'msg' : message.rstrip('\n')})
+                        server.send(message_data.encode())
+                    else:
+                        print("Usage: '/msg [username] [message]'")
                     continue
                 else:
                     print("Invalid command.")
@@ -59,6 +70,7 @@ def send_message_thread(username):
                 server.send(message_data.encode())
                 sys.stdout.write("[{0}]: {1}".format(username, message))
                 sys.stdout.flush()
+
 
 def select_username():
     message_data = server.recv(BUFFER)
