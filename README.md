@@ -1,4 +1,4 @@
-This is a TCP chat system that uses a threaded server.
+This is a TCP chat program that uses a threaded server.
 Course: Distributed Systems
 
 How to use:
