@@ -43,8 +43,7 @@ def receive_message_thread():
             message_data = server.recv(BUFFER)
             message_data_decoded = json.loads(message_data.decode())
             print("[{0}]: {1}".format(message_data_decoded['username'], message_data_decoded['msg']))
-        except Exception as e:
-            print("Error receiving message: " + e)
+        except:
             sys.exit(1)
 
 # thread for sending messages
@@ -97,8 +96,7 @@ def send_message_thread(username):
                         # printing message to stdout on client side aswell
                         sys.stdout.write("[{0}]: {1}".format(username, message))
                         sys.stdout.flush()
-        except Exception as e:
-            print("Error sending message: " + e)
+        except:
             sys.exit(1)
 
 def select_username():
@@ -127,8 +125,7 @@ def select_username():
                     sys.stdout.flush()
             else:
                 print("[Server]: Username can't be empty.")
-    except Exception as e:
-        print("Error selecting username: " + e)
+    except:
         sys.exit(1)
 
 def main():
