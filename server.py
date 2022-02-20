@@ -11,6 +11,7 @@ import socket
 import threading
 import json
 
+# recv buffer
 BUFFER = 2048
 IP_ADDRESS = "127.0.0.1"
 PORT = 1234
@@ -193,8 +194,7 @@ def client_thread(client_socket, client_address):
                 remove_client(client_socket, client_channel, client_address)
                 return
         except:
-            remove_client(client_socket, client_channel, client_address)
-            return
+            continue
 
 def main():
     while(True):
