@@ -1,6 +1,7 @@
 This is a TCP chat program that uses a threaded server.
 Course: Distributed Systems
 
+
 How to use:
 1.	Start server with ‘python server.py’
 2.	Open one or more terminals to start clients
