@@ -29,7 +29,6 @@ def receive_message_thread():
             message_data_decoded = json.loads(message_data.decode())
             print("[{0}]: {1}".format(message_data_decoded['username'], message_data_decoded['msg']))
         except:
-            print("Failed to receive messages.")
             sys.exit(0)
     
 def send_message_thread(username):
